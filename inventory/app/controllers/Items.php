@@ -41,30 +41,6 @@
 
       $this->view('items/index', $data);
     }
-    
-    public function show(){
-      if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-        $data = [
-          'id' => '32',
-          'imageLocation' => trim($_POST['imageLocation']),
-          'imageNewLocation' => trim($_POST['imageNewLocation'])
-        ];
-        
-        rename($data['imageLocation'], $data['imageNewLocation']);
-        $items = $this->itemModel->updateItemImageLocation($data);
-        $this->view('items/show', $data);
-
-      } else {
-        // Get Items
-        $items = $this->itemModel->getItemByID('32');        
-        $data = [
-          'title' => 'Item List',
-          'description' => 'This is the item list where users can view the items they\'ve uploaded',
-          'items' => $items
-        ];        
-        $this->view('items/show', $data);
-      }
-    }
 
     public function add(){
       if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -174,20 +150,28 @@
       }
     }
 
-    public function edit($id){
+    public function edit($id){      
       if ($_SERVER['REQUEST_METHOD'] == 'POST'){
         $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
+        
+        // Get Uploaded Image
+        $image = $_FILES['itemPic'];
+
+        // Get existing item
+        /** Use this to fill in image_location if not getting updated */
+        $item = $this->itemModel->getItemByID($id);
 
         $data = [
           'id' => $id,
           'name' => trim($_POST['name']),
           'categories' => trim($_POST['categories']),
           'description' => trim($_POST['description']),
+          'image_location' => '',
           'user_id' => $_SESSION['user_id'],
           'name_err' => '',
           'image_err' => '',
           'description_err' => ''
-        ];
+        ];  
 
         // Init image data
         $imageName = '';
@@ -207,37 +191,41 @@
           $data['description_err'] = 'Please enter an item description';
         }
 
-        // if (empty($image)){
-        //   $data['image_err'] = 'No image uploaded!';
-        // } else {
-        //   $imageName = $image['name'];
-        //   $imageTmpName = $image['tmp_name'];
-        //   $imageSize = $image['size'];
-        //   $imageError = $image['error'];
+        die($image);
 
-        //   $imageExt = explode('.', $imageName);
-        //   $imageActualExt = strtolower(end($imageExt));
-        //   $allowed = array('jpg', 'jpeg', 'png');
+        if (!empty($image)){
+          $imageName = $image['name'];
+          $imageTmpName = $image['tmp_name'];
+          $imageSize = $image['size'];
+          $imageError = $image['error'];
 
-        //   if (in_array($imageActualExt, $allowed)){
-        //     if ($imageError === 0){
-        //       if ($imageSize < 1000000){
-        //         // Validated
-        //         // Upload image 
-        //         $imageNameNew = $data['id']."_".$data['user_id']."_".$imageExt[0].".".$imageActualExt;
-        //         $imageDestination = APPROOT."\uploads\\".$imageNameNew;
-        //         $data['image_location'] = $imageDestination;
-        //         move_uploaded_file($imageTmpName, $imageDestination);
-        //       } else {
-        //         $data['image_err'] = 'The image is too big!';
-        //       }
-        //     } else {
-        //       $data['image_err'] = 'There was an error uploading your file!';
-        //     }
-        //   } else {
-        //     $data['image_err'] = 'You cannot upload images of this type!';
-        //   }
-        // }
+          $imageExt = explode('.', $imageName);
+          $imageActualExt = strtolower(end($imageExt));
+          $allowed = array('jpg', 'jpeg', 'png');
+
+          if (in_array($imageActualExt, $allowed)){
+            if ($imageError === 0){
+              if ($imageSize < 1000000){
+                // Validated
+                // Upload image 
+                $imageNameNew = $data['id']."_".$data['user_id']."_".$imageExt[0].".".$imageActualExt;
+                $imageDestination = APPROOT."\uploads\\".$imageNameNew;
+                $data['image_location'] = $imageDestination;
+                move_uploaded_file($imageTmpName, $imageDestination);
+              } else {
+                $data['image_err'] = 'The image is too big!';
+              }
+            } else {
+              $data['image_err'] = 'There was an error uploading your file!';
+            }
+          } else {
+            $data['image_err'] = 'You cannot upload images of this type!';
+          }
+        } else {
+          $data['image_location'] = $item->image_location;
+        }
+
+        // die(print_r($data));
 
         // Make sure no errors
         if (empty($data['name_err']) && empty($data['description_err']) && empty($data['image_err'])){
@@ -260,10 +248,10 @@
       } else {
         // Get existing item from model
         $item = $this->itemModel->getItemByID($id);
-        $categories = $this->categoryModel->getCategories();
-
+        $categories = $this->categoryModel->getCategoryNames();
+        
         // Check for owner
-        if ($item->user_id != $_SESSION['user_id']){
+        if ($item->itemUserID != $_SESSION['user_id']){
           redirect('items');
         }
 
@@ -272,16 +260,15 @@
           'name' => $item->itemName,
           'category' => $item->categoryName,
           'description' => $item->description,
-          // 'image' => trim($_POST['image']),
+          'image_location' => $item->image_location,
           'name_err' => '',
           'category_err' => '',
           'description_err' => '',
-          // 'image_err' => ''
-          // 'user_id' => $_SESSION['user_id'] 
           'categories' => $categories
-        ];
+        ];        
 
-        // print_r($data);
+        $data['image_location'] = renameImageLocation($item->image_location);
+        // die(print_r($data));
 
         $this->view('items/edit', $data);        
       }
@@ -297,6 +284,13 @@
         if ($item->user_id != $_SESSION['user_id']){
           redirect('items');
         }
+
+        // Delete image from public/uploads folder
+        emptyPublicUploads();
+        
+        // Delete image from app/uploads folder
+        $imageLocationApp = $item->image_location;
+        unlink($imageLocationApp);
 
         if ($this->itemModel->deleteItem($id)){
           flash('item_message', 'Item Removed');
