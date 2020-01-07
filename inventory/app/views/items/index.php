@@ -27,7 +27,7 @@
               <img src="<?php 
               $imageLocation = explode('/', $item->image_location);
               $imageNewName = $imageLocation[4].'/'.$imageLocation[5].'/'.$imageLocation[6];
-              echo $imageNewName;
+              echo URLROOT.'/'.$imageNewName;
               // echo $item->image_location;
               ?>" alt="" width=100%>
               

@@ -31,7 +31,12 @@
             <span class="invalid-feedback"><?php echo $data['description_err']; ?></span>
           </div>
           <div class="form-group">
-            <label for="image">Upload Image: </label>
+            <p>Current Image: </p>
+            <img src="<?php echo URLROOT.'/'.$data['image_location']; ?>" alt="" width=100%>
+          </div>
+          <div class="form-group">
+            <label for="image">Upload New Image: </label>
+            <input type="file" name="itemPic">
           </div>
           <div class="row">
             <div class="col">
