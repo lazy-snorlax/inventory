@@ -2,13 +2,12 @@
 A PHP website that can be used for cataloguing items. It supports dedicated users, and can be used a basis for a store front. This was created with small businesses in mind.
 
 ## Things to know
-- This is an inventory list. NOT A SHOP. There is no functionality for making financial transactions.
-- As it is now, this is fully functional in regards to creating new users and logging in, creating and deleting items and creating and deleting categories.
-- There is partial functionality in editing items.
-- Image handling is not great. If an item is deleted, be sure to double-check the directory the associated image is stored in.
-- This is a barebones application, using getbootstrap.com as the css. Feel free to incorporate custom css whereever necessary.
+- This is an inventory list. NOT A SHOP. There is no functionality for making financial transactions (yet).
+- As it is now, this is fully functional in regards to creating new users and logging in, creating, editing and deleting items and creating and deleting categories.
+- Image handling has improved. If an item is deleted, the associated image is also deleted. Currently, to upload a new image for an existing item, you would have to delete the item and create a new item.
+- This is a barebones application focusing more on functionality than front-end appearances. Currently using getbootstrap.com as the css. Feel free to incorporate custom css whereever necessary.
 
-Database
+Database - SQL file included
 -------------------------
 ### Table 1: users
 - id int PRIMARY-KEY auto-increment (unique user id)
