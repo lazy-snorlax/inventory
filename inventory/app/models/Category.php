@@ -22,6 +22,18 @@
       $results = $this->db->resultSet();
       return $results;
     }
+    
+    // Get All Categories Names
+    public function getCategoryNames(){
+      $this->db->query('SELECT categories.name,
+                        categories.id as categoryId,
+                        categories.name as categoryName,
+                        categories.created_at as categoryCreated
+                        FROM categories
+                        ');
+      $results = $this->db->resultSet();
+      return $results;
+    }
 
     // Get Category by id
     public function getCategoryByID($id){

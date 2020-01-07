@@ -44,6 +44,8 @@
                         categories.id as categoryID,
                         items.name as itemName,
                         categories.name as categoryName,
+                        items.user_id as itemUserID,
+                        categories.user_id as categoryUserID,
                         items.created_at as itemCreated,
                         categories.created_at as categoryCreated
                         FROM items
@@ -88,7 +90,7 @@
       }
     }
 
-    // Edit item
+    // Update item
     public function updateItem($data){
       $this->db->query('UPDATE items SET
                       name = :name,
@@ -112,7 +114,6 @@
       }
     }
 
-
     // Delete item
     public function deleteItem($id){
       $this->db->query('DELETE FROM items WHERE id = :id');
@@ -126,7 +127,6 @@
         return false;
       }
     }
-
 
     // Update item image_location
     public function updateItemImageLocation($data){
